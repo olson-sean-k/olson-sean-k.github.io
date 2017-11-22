@@ -1,0 +1,74 @@
+# Site.
+title: Sean Olson
+bio: "Musings on music, code, and coffee."
+description: "Musings on music, code, and coffee."
+reading_time: true
+words_per_minute: 180
+logo: 'assets/img/gear.png'
+background: 'assets/img/tessellated-18.png'
+tiled_bg: false
+locale: en_US
+url: https://olson-sean-k.github.io
+author_photo: https://avatars2.githubusercontent.com/u/1481619?s=460&v=4
+
+# Jekyll.
+permalink: /:title/
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  enable_coderay: false
+mathjax: true
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Comments.
+disqus_shortname: olson-sean-k
+
+# Social.
+#bing-verify:
+#codepen:
+#dribbble:
+email: olson.sean.k@gmail.com
+#facebook:
+#flickr:
+#foursquare:
+github-url: olson-sean-k
+#google:
+  #ad-client:
+  #ad-slot:
+  #analytics:
+  #verify:
+#hackernews:
+#instagram:
+keybase: olsonseank
+#lastfm:
+#linkedin:
+#medium:
+#pinterest:
+#soundcloud:
+#stackoverflow:
+#steam:
+#tumblr:
+twitter: olsonseank
+#weibo:
+#xing:
+#xmpp:
+#youtube:
+#youtube-channel:
+
+# Plugins.
+plugins:
+  - jekyll-mentions
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-gist
+
+jekyll-mentions:
+  base_url: https://github.com
+
+exclude: [README.md, Gemfile, Gemfile.lock, node_modules, gulpfile.js, package.json, _site, src, vendor, CNAME, LICENSE, Rakefile]

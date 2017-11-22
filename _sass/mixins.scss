@@ -1,0 +1,88 @@
+// Clear floats.
+@mixin clearfix {
+    *zoom: 1;
+    &:before,
+    &:after {
+        display: table;
+        content: "";
+        // Fix for contenteditable bug in Opera. See:
+        // http://nicolasgallagher.com/micro-clearfix-hack/#comment-36952
+        line-height: 0;
+    }
+    &:after {
+        clear: both;
+    }
+}
+
+// Center-align block level elements.
+@mixin center-block() {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// Round corners and borders.
+@mixin border-radius($topright: 0, $bottomright: 0, $bottomleft: 0, $topleft: 0) {
+    -webkit-border-top-right-radius : $topright;
+    -webkit-border-bottom-right-radius : $bottomright;
+    -webkit-border-bottom-left-radius : $bottomleft;
+    -webkit-border-top-left-radius : $topleft;
+    -moz-border-radius-topright : $topright;
+    -moz-border-radius-bottomright : $bottomright;
+    -moz-border-radius-bottomleft : $bottomleft;
+    -moz-border-radius-topleft : $topleft;
+    border-top-right-radius : $topright;
+    border-bottom-right-radius : $bottomright;
+    border-bottom-left-radius : $bottomleft;
+    border-top-left-radius : $topleft;
+    -webkit-background-clip : padding-box;
+    -moz-background-clip : padding;  
+    background-clip : padding-box; 
+}
+
+// Round corners and borders.
+@mixin rounded($radius:4px) {
+    -webkit-border-radius : $radius;
+    -moz-border-radius : $radius;
+    border-radius : $radius; 
+}
+
+// Full-fat vertical font rhythm.
+@mixin font-size($size) {
+    @include font-rem($size);
+    line-height: 0 + round($font-document-line-height / $size*10000) / 10000;
+    margin-bottom: 0px + $font-document-line-height;
+    margin-bottom: 0rem + ($font-document-line-height / $font-document-size);
+}
+
+// Font size (REMs).
+@mixin font-rem($size) {
+    font-size: 0px + $size;
+    font-size: 0rem + $size / $font-document-size;
+}
+
+// Font size and line height.
+@mixin font($size) {
+    @include font-rem($size);
+    line-height: 0 + round($font-document-line-height / $size*10000) / 10000;
+}
+
+// Horizontal gradient.
+@mixin horizontal($begin : $color-palette-gallery, $middle : $color-palette-stack, $end : $color-palette-gallery) {
+    background-color: $end;
+    background-image: -webkit-linear-gradient(left, $begin, $middle, $end); // Safari 5.1+, Chrome 10+
+    background-image: -moz-linear-gradient(left, $begin, $middle, $end);    // FF 3.6+
+    background-image: -ms-linear-gradient(left, $begin, $middle, $end);     // IE10
+    background-image: -o-linear-gradient(left, $begin, $middle, $end);      // Opera 11.10
+    background-image: linear-gradient(left, $begin, $middle, $end);         // W3C
+    background-repeat: repeat-x; 
+}
+
+// .transition(PROPERTY DURATION DELAY(OPTIONAL) TIMING-FINCTION);
+@mixin transition($transition) {
+  -webkit-transition : $transition;
+  -moz-transition : $transition;
+  -ms-transition : $transition;
+  -o-transition : $transition;
+  transition : $transition; 
+}

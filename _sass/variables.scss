@@ -1,0 +1,39 @@
+// Color palette.
+$color-palette-alabaster    : #f9f9f9;
+$color-palette-black        : #000;
+$color-palette-bon-jour     : #dfe0e4;
+$color-palette-celeste      : #ccc;
+$color-palette-fuscous-gray : #555;
+$color-palette-gallery      : #f0f0f0;
+$color-palette-gray         : #e8e8e8;
+$color-palette-maroon       : #85144b;
+$color-palette-mischka      : #d0d1d5;
+$color-palette-mercury      : #e5e6e9;
+$color-palette-pink-swan    : #bbb;
+$color-palette-red          : #FF4136;
+$color-palette-shark        : #282828;
+$color-palette-stack        : #8c8b8b;
+$color-palette-tuatara      : #383838;
+$color-palette-tundora      : #444;
+$color-palette-white        : #fff;
+
+// Theme and element colors.
+$color-theme-body        : $color-palette-fuscous-gray;
+$color-theme-btn-danger  : #C64537;
+$color-theme-btn-info    : #308cbc;
+$color-theme-btn-success : #5cb85c;
+$color-theme-btn-warning : #dd8338;
+$color-theme-complement  : complement(#222);
+
+// Fonts and typography.
+$font-primary-family       : Fira Sans,sans-serif;
+$font-secondary-family     : serif;
+$font-mono-family          : Inconsolata;
+$font-document-size        : 16;
+$font-document-line-height : 26;
+
+// Media queries.
+$media-small     : "only screen and (max-width: 30em)";
+$media-medium    : "only screen and (min-width: 30.1em) and (max-width: 48em)";
+$media-large     : "only screen and (min-width: 48.1em) and (max-width: 62.5em)";
+$media-not-small : "only screen and (min-width: 48em)";
