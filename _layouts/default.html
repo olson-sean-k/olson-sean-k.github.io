@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include head.html %}
+<body>
+    <div class="wrapper">
+        <section>
+            <div id="title">
+                <h1>{{ site.title }}</h1>
+                <p>
+                    <a href="{{ site.url }}">Blog</a> &vert;
+                    <a href="{{ site.github.owner_url }}">GitHub</a> &vert;
+                    <a href="https://twitter.com/olsonseank">Twitter</a> &vert;
+                    <a href="{{ "/about" | prepend: site.url }}">About</a>
+                </p>
+                <hr>
+                <span class="credits left">project maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></span>
+                <span class="credits right">hosted on GitHub Pages &mdash; theme by <a href="https://twitter.com/michigangraham">Matt Graham</a></span>
+            </div>
+            {{ content }}
+        </section>
+    </div>
+</body>
+</html>
