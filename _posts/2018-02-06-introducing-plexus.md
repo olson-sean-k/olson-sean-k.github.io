@@ -4,89 +4,129 @@ title: Introducing Plexus
 published: false
 ---
 
-Nearly two years ago, I decided to learn Rust. I started with a project called
+In 2015 I decided to learn Rust. I started with a project called
 [Bismuth](https://github.com/olson-sean-k/bismuth), which took inspiration from
 the [Cube engine](https://en.wikipedia.org/wiki/cube_(video_game)) and its
 legacy: representing a dynamic game world as a deformable
 [oct-tree](https://en.wikipedia.org/wiki/octree).
 
 It didn't take long for some modules to become candidates for independent
-crates. One such module generated vertex data for primitive meshes like cubes.
+crates. One such module generated polygonal mesh data for primitives like cubes.
 As I spent more and more time on it, I spun that code into its own crate called
-[Plexus](https://github.com/olson-sean-k/plexus). Plexus now provides
-primitives, graphs, and buffers that can be used to generate and manipulate 2D
-and 3D mesh data. Here's an introduction to its main features and goals. I plan
-to discuss some of this in more detail in future posts.
+[Plexus](https://github.com/olson-sean-k/plexus). Plexus now provides an
+assortment of tools for processing polygonal meshes while providing some unique
+APIs and remaining agnostic to geometry and dimension.
 
-## Generating Mesh Data
+This post is an introduction to the main features and goals of Plexus, but I
+plan to discuss some of this in more detail in future posts. There is a lot to
+discuss in all of the code examples!
+
+## Philosophy and Goals
+
+First, I should get this out of the way:
+
+![I have no idea what I'm doing.](http://m.quickmeme.com/img/1c/1c491f71b689e82d6e838b5d8ce5cbdfef41723662d1ce5e5cf34f32ae60a7a3.jpg)
+
+I'm easily distracted and it turned out that polygonal mesh processing is an
+interesting topic. I don't have very much experience with graphics programming
+or meshes as either a programmer or an artist. My hope is that coming to this
+fresh may introduce some useful though unusual perspectives.
+
+Below are a few high level goals of the Plexus project:
+
+- **Flexibility and Genericness**
+  Plexus attempts to be flexible, especially with respect to geometry. Plexus is
+  opinionated about _topology_, but allows arbitrary data to be used for
+  _geometry_. Geometry is important, so Plexus uses
+  [Theon](https://github.com/olson-sean-k/theon) to provide rich features so
+  long as it understands the positional data of some geometry.
+- **Correctness and Consistency**
+  Plexus provides a graph representation for polygonal meshes. Maintaining the
+  topological consistency of such a data structure can be difficult, and Plexus
+  attempts to provide an API that does not allow user code to invalidate graphs;
+  errors, panics, and bugs are contained within the library.
+
+## Iterator Expressions
 
 One of the first problems I encountered in Bismuth was generating vertex data
-for simple meshes. Each non-empty partition of the oct-tree is represented by
-deformations to a unit cube. For each partition, these deformations are applied
-to the positions of a unit cube mesh. This led to generators in Plexus.
+for simple polygonal meshes. Each non-empty partition of the oct-tree is
+represented by deformations to a unit cube. For each partition, these
+deformations are applied to the positional data of a unit cube.
 
-### Iterator Expressions
-
-Initially inspired by [genmesh](https://github.com/gfx-rs/genmesh), I started
-with primitive generators that use iterator expressions to manipulate topology
-and geometry. These expressions can be arbitrarily complex and are typically
-collected into graphs or buffers. Here's a simple example:
+Initially inspired by [`genmesh`](https://crates.io/crates/genmesh), I began
+with generators that produce iterators over primitive topological structures
+like triangles. These structures can be manipulated using iterator expressions
+which can be arbitrarily complex and aggregated in various ways. Here's an
+example:
 
 ```rust
+use decorum::R64;
+use nalgebra::Point3;
 use plexus::prelude::*;
+use plexus::primitive::generate::Position;
 use plexus::primitive::sphere::UvSphere;
-use plexus::primitive::HashIndexer;
+use plexus::index::{Flat3, HashIndexer};
 
-let (indeces, vertices) = UvSphere::new(16, 16)
-    .polygons_with_position()
+type E3 = Point3<R64>;
+
+let (indices, positions) = UvSphere::new(16, 16)
+    .polygons::<Position<E3>>()
     .triangulate()
-    .flat_index_vertices(HashIndexer::default());
+    .index_vertices::<Flat3, _>(HashIndexer::default());
 ```
 
-The above example generates raw buffers from a UV-sphere. These are commonly
-known as _index_ and _vertex buffers_ and are typically used for [indexed
-drawing](https://learnopengl.com/getting-started/hello-triangle). The
-`polygons_with_position` generator function produces an iterator over polygons
-containing position data in their vertices. These are tessellated into
-triangles before being indexed into buffers.
+The above example generates raw buffers from a UV-sphere. These raw buffers are
+commonly known as _index_ and _vertex buffers_ and are typically used for
+[indexed drawing](https://learnopengl.com/getting-started/hello-triangle). The
+`polygons` function produces an iterator over the polygons that form a primitive
+and accepts a type parameter that determines the geometric attribute contained
+in the vertices of those polygons. These polygons are tessellated into triangles
+before being indexed into the raw buffers.
 
-Here's a more substantial example that further manipulates multiple streams of
+Here's a more substantial example that further manipulates iterators over
 polygons:
 
 ```rust
-use decorum::R32;
+use decorum::R64;
 use nalgebra::Point3;
-use plexus::buffer::MeshBuffer;
+use plexus::buffer::MeshBuffer3;
 use plexus::prelude::*;
-use plexus::primitive::cube::{Cube, Plane};
+use plexus::primitive::cube::{Bounds, Cube};
+use plexus::primitive::generate::{Normal, Position};
 use plexus::primitive;
 
-let unit: R32 = 10.0.into();
+use crate::Vertex;
+
+type E3 = Point3<R64>;
+
 let cube = Cube::new();
 let buffer = primitive::zip_vertices((
-        cube.polygons_with_position()
-            .map_vertices(|position| -> Point3<R32> { position.into() })
-            .map_vertices(|position| position * unit),
-        cube.polygons_with_plane(),
-    ))
-    .map_vertices(|(position, plane)| {
-        (position, map_unit_uv(&position, &plane, unit))
+    cube.polygons_from::<Position<E3>>(Bounds::width_width(10.0.into())),
+    cube.polygons::<Normal<E3>>(),
+))
+    .map_vertices(|(position, normal)| {
+        Vertex::new(position, normal)
     })
-    .tetrahedrons()
-    .collect::<MeshBuffer<u32, _>>();
+    .triangulate()
+    .collect::<MeshBuffer<usize, Vertex>>();
 ```
 
-Here, different geometric attributes are combined by `zip_vertices` into a
-single stream of polygons containing both position and plane geometry. The
-combined vertex data is used to generate texture coordinates with `map_unit_uv`
-(not shown). Finally, the polygons are tessellated and collected into a
-`MeshBuffer`. More on that later.
+In this example, different geometric attributes are combined by `zip_vertices`
+into a single iterator over polygons containing both position and normal
+geometry. This is used to construct a `Vertex` and finally the polygons are
+tessellated and collected into a `MeshBuffer`.
 
-### Indexing: the Problem with Hashing
+Iterator expressions like these can be used to collect polygons into linear and
+graph data structures as well as raw buffers as seen above. It is also possible
+to generate iterators over individual vertices alongside indexing polygons
+(which avoids the use of an indexer).
 
-These kinds of iterator expressions aren't very useful on their own.
-Aggregating the results of an expression often requires _indexing_, which
-eliminates redundant geometry while maintaining topological structures.
+### A Note on Indexing and Floating-Point
+
+As seen above, aggregating an iterator expression often requires _indexing_,
+which eliminates redundant geometry while maintaining topological structure. You
+may have noticed the use of the `R64` type rather than the primitive
+floating-point types `f32` or `f64`. What's that about?
 
 Hashing is often a natural way to detect and discard duplicate data, but
 there's a problem: it is a common need to represent real numbers in graphics
@@ -96,37 +136,20 @@ do **not** implement the `Hash` and `Eq` traits (for good reasons).
 
 To get around this, Plexus uses the
 [Decorum](https://github.com/olson-sean-k/decorum) crate, which I also spun off
-from Bismuth. I plan to write a bit about Decorum in the future as well.
-Plexus uses Decorum types in generators and provides conversions to improve
-ergonomics. Here's an example:
+from Bismuth. Decorum provides proxy (wrapper) types for floating-point
+primitives that provide a total ordering and therefore can implement `Hash` and
+`Eq`. Plexus can index non-`Hash` data, but it requires a bit of additional
+code. I plan to write a bit about Decorum in the future as well.
 
-```rust
-use nalgebra::Point3;
-use plexus::graph::Mesh;
-use plexus::prelude::*;
-use plexus::primitive::sphere::UvSphere;
+## Graphs
 
-let mut mesh = UvSphere::new(16, 16)
-    .polygons_with_position()
-    .collect::<Mesh<Point3<f32>>>(); // Magic!
-```
-
-This produces a graph where the vertex geometry is of type `Point3<f32>`.
-Before these conversations occur, the topology stream is indexed over a
-hashable type emitted by the generator. Enabling this kind of conversion only
-requires implementing the `FromGeometry` trait and implementations are provided
-out-of-the-box for commonly used types.
-
-...
-
-## Half-Edge Graphs
-
-Plexus uses a [half-edge
+Plexus provides a [half-edge
 graph](https://www.openmesh.org/media/Documentations/OpenMesh-6.3-Documentation/a00010.html)
-representation of meshes. These graphs allow for effecient traversals of
-topology, especially neighbor lookups, which are often important. They also
-support associated geometry for vertices, edges, and faces. Implementing graphs
-in Rust is an interesting excercise, as common approaches using pointers or
-references do not satisfy the borrow checker if the graph is mutable.
+representation of polygonal meshes. These graphs allow for efficient traversals
+of topology, which are often important. They also support arbitrary geometry
+associated with vertices, arcs, edges, and faces. Implementing graphs in Rust is
+an interesting excercise, as common approaches using pointers or references do
+not provide clear ownship semantics and do not satisfy the borrow checker,
+especially in a mutable context.
 
 ...
