@@ -4,7 +4,8 @@ title: Introducing Plexus
 published: true
 ---
 
-In 2015 I decided to learn Rust. I started with a project called
+I've been following Rust for a long time and in 2015 I decided to write some
+code. I started with a project called
 [Bismuth](https://github.com/olson-sean-k/bismuth), which took inspiration from
 the [Cube engine](https://en.wikipedia.org/wiki/cube_(video_game)) and its
 legacy: representing a dynamic game world as a deformable
@@ -51,10 +52,10 @@ Below are a few high level goals of the Plexus project:
 
 - **Documentation**
 
-  This may seems like an odd goal, but I often find useful crates and libraries
-  difficult to use solely due to a lack of documentation and examples. Plexus is
-  very incomplete, but I've tried to document what I can via `rustdoc` and a
-  (very scrappy) [website](https://plexus.rs) and [user
+  This may seems like an odd goal, but I sometimes find useful crates and
+  libraries difficult to use solely due to a lack of documentation and examples.
+  Plexus is very incomplete, but I've tried to document what I can via `rustdoc`
+  and a (very scrappy) [website](https://plexus.rs) and [user
   guide](https://plexus.rs/user-guide/graphs).
 
 In the future, I think it would be interesting to use Plexus as the basis for
