@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Introducing Plexus
-published: false
+published: true
 ---
 
 In 2015 I decided to learn Rust. I started with a project called
