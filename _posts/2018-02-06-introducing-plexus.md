@@ -54,11 +54,12 @@ Below are a few high level goals of the Plexus project:
   This may seems like an odd goal, but I often find useful crates and libraries
   difficult to use solely due to a lack of documentation and examples. Plexus is
   very incomplete, but I've tried to document what I can via `rustdoc` and a
-  (very scrappy) website and user guide.
+  (very scrappy) [website](https://plexus.rs) and [user
+  guide](https://plexus.rs/user-guide/graphs).
 
 In the future, I think it would be interesting to use Plexus as the basis for
-modeling software, but I also find the propsect of game-related features like
-rigging and animation to be an exciting idea. We'll see.
+modeling software. I also find the propsect of features like rigging and
+animation to be an exciting idea.
 
 At this point, Plexus does not provide the necessary features to be very useful,
 but the infrastructure built to power its graph implementation seems promising
@@ -114,12 +115,12 @@ use plexus::primitive::cube::{Bounds, Cube};
 use plexus::primitive::generate::{Normal, Position};
 use plexus::primitive;
 
-use crate::Vertex;
+use crate::Vertex; // Omitted for brevity.
 
 type E3 = Point3<R64>;
 
 let cube = Cube::new();
-let buffer: MeshBuffer<usize, Vertex> = primitive::zip_vertices((
+let buffer: MeshBuffer3<usize, Vertex> = primitive::zip_vertices((
     cube.polygons_from::<Position<E3>>(Bounds::with_width(10.0.into())),
     cube.polygons::<Normal<E3>>(),
 ))
@@ -140,7 +141,7 @@ graph data structures as well as raw buffers as seen above. It is also possible
 to generate iterators over individual vertices alongside indexing polygons
 (which avoids the use of an indexer).
 
-### Indexing, Hashing, and Floating-Point
+### A Note on Indexing, Hashing, and Floating-Point
 
 As seen above, aggregating an iterator expression often requires _indexing_,
 which eliminates redundant geometry while maintaining topological structure. You
@@ -165,10 +166,10 @@ code. I plan to write a bit about Decorum in the future as well.
 Plexus provides a [half-edge
 graph](https://www.openmesh.org/media/Documentations/OpenMesh-6.3-Documentation/a00010.html)
 representation of polygonal meshes. These graphs allow for efficient traversals
-of topology, which are often important. They also support arbitrary geometry
-associated with vertices, arcs, edges, and faces. Implementing graphs in Rust is
-an interesting excercise, as common approaches using pointers or references do
-not provide clear ownship semantics and do not satisfy the borrow checker,
+of topology. Graphs also support arbitrary geometry associated with vertices,
+arcs (half-edges), edges, and faces. Implementing graphs in Rust is an
+interesting excercise, as common approaches using pointers or references do not
+provide clear ownship semantics and do not satisfy the borrow checker,
 especially in a mutable context.
 
 ...
