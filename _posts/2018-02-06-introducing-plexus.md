@@ -30,7 +30,7 @@ First, I should get this out of the way:
 I'm easily distracted and it turned out that polygonal mesh processing is an
 interesting topic. I don't have very much experience with graphics programming
 or meshes as either a programmer or an artist. My hope is that coming to this
-fresh may introduce some useful though unusual perspectives.
+fresh may introduce some novel perspectives (even if atypical).
 
 Below are a few high level goals of the Plexus project:
 
@@ -41,12 +41,28 @@ Below are a few high level goals of the Plexus project:
   _geometry_. Geometry is important, so Plexus uses
   [Theon](https://github.com/olson-sean-k/theon) to provide rich features so
   long as it understands the positional data of some geometry.
+
 - **Correctness and Consistency**
 
   Plexus provides a graph representation for polygonal meshes. Maintaining the
   topological consistency of such a data structure can be difficult, and Plexus
   attempts to provide an API that does not allow user code to invalidate graphs;
   errors, panics, and bugs are contained within the library.
+
+- **Documentation**
+
+  This may seems like an odd goal, but I often find useful crates and libraries
+  difficult to use solely due to a lack of documentation and examples. Plexus is
+  very incomplete, but I've tried to document what I can via `rustdoc` and a
+  (very scrappy) website and user guide.
+
+In the future, I think it would be interesting to use Plexus as the basis for
+modeling software, but I also find the propsect of game-related features like
+rigging and animation to be an exciting idea. We'll see.
+
+At this point, Plexus does not provide the necessary features to be very useful,
+but the infrastructure built to power its graph implementation seems promising
+and provides a basis for implementing common algorithms.
 
 ## Iterator Expressions
 
@@ -77,12 +93,13 @@ let (indices, positions) = UvSphere::new(16, 16)
     .index_vertices::<Flat3, _>(HashIndexer::default());
 ```
 
-The above example generates raw buffers from a UV-sphere. These raw buffers are
-commonly known as _index_ and _vertex buffers_ and are typically used for
+The above example generates _raw buffers_ from a UV-sphere. These raw buffers
+are commonly known as _index_ and _vertex buffers_ and are typically used for
 [indexed drawing](https://learnopengl.com/getting-started/hello-triangle). The
 `polygons` function produces an iterator over the polygons that form a primitive
 and accepts a type parameter that determines the geometric attribute contained
-in the vertices of those polygons. These polygons are tessellated into triangles
+in the vertices of those polygons. These polygons are
+[tessellated](https://graphics.fandom.com/wiki/tesselation) into triangles
 before being indexed into the raw buffers.
 
 Here's a more substantial example that further manipulates iterators over
@@ -102,15 +119,15 @@ use crate::Vertex;
 type E3 = Point3<R64>;
 
 let cube = Cube::new();
-let buffer = primitive::zip_vertices((
-    cube.polygons_from::<Position<E3>>(Bounds::width_width(10.0.into())),
+let buffer: MeshBuffer<usize, Vertex> = primitive::zip_vertices((
+    cube.polygons_from::<Position<E3>>(Bounds::with_width(10.0.into())),
     cube.polygons::<Normal<E3>>(),
 ))
     .map_vertices(|(position, normal)| {
         Vertex::new(position, normal)
     })
     .triangulate()
-    .collect::<MeshBuffer<usize, Vertex>>();
+    .collect();
 ```
 
 In this example, different geometric attributes are combined by `zip_vertices`
@@ -123,7 +140,7 @@ graph data structures as well as raw buffers as seen above. It is also possible
 to generate iterators over individual vertices alongside indexing polygons
 (which avoids the use of an indexer).
 
-### A Note on Indexing and Floating-Point
+### Indexing, Hashing, and Floating-Point
 
 As seen above, aggregating an iterator expression often requires _indexing_,
 which eliminates redundant geometry while maintaining topological structure. You
