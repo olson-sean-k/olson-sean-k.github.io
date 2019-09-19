@@ -35,12 +35,14 @@ fresh may introduce some useful though unusual perspectives.
 Below are a few high level goals of the Plexus project:
 
 - **Flexibility and Genericness**
+
   Plexus attempts to be flexible, especially with respect to geometry. Plexus is
   opinionated about _topology_, but allows arbitrary data to be used for
   _geometry_. Geometry is important, so Plexus uses
   [Theon](https://github.com/olson-sean-k/theon) to provide rich features so
   long as it understands the positional data of some geometry.
 - **Correctness and Consistency**
+
   Plexus provides a graph representation for polygonal meshes. Maintaining the
   topological consistency of such a data structure can be difficult, and Plexus
   attempts to provide an API that does not allow user code to invalidate graphs;
