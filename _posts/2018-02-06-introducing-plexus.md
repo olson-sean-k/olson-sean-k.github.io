@@ -224,7 +224,6 @@ traits, it is even possible to write very generic code that operates exclusively
 with views:
 
 ```rust
-use decorum::N64;
 use plexus::graph::{EdgeMidpoint, FaceView, GraphGeometry, MeshGraph};
 use plexus::prelude::*;
 use plexus::AsPosition;
@@ -254,8 +253,8 @@ where
 }
 ```
 
-This example subdivides a face by circumscribing a similar polygon within its
-perimeter. Because this requires geometric operations, the `EdgeMidpoint` trait
-is used as a bound, specifying that the graph's geometry must support the
-computation of midpoints.
+This more advanced example subdivides a face by circumscribing a similar polygon
+within its perimeter. Because this requires geometric operations, the
+`EdgeMidpoint` trait is used as a bound, specifying that the graph's geometry
+must support the computation of midpoints.
 ...
