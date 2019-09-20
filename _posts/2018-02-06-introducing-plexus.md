@@ -4,8 +4,8 @@ title: Introducing Plexus
 published: false
 ---
 
-I've been following Rust for a long time and in 2015 I decided to write some
-code. I started with a project called
+I've been following Rust for a long time and in 2015 I decided to dive in and
+write some code. I started with a project called
 [Bismuth](https://github.com/olson-sean-k/bismuth), which took inspiration from
 the [Cube engine](https://en.wikipedia.org/wiki/cube_(video_game)) and its
 legacy: representing a dynamic game world as a deformable
@@ -28,10 +28,10 @@ First, I should get this out of the way:
 
 ![I have no idea what I'm doing.](http://m.quickmeme.com/img/1c/1c491f71b689e82d6e838b5d8ce5cbdfef41723662d1ce5e5cf34f32ae60a7a3.jpg)
 
-I'm easily distracted and it turned out that polygonal mesh processing is an
-interesting topic. I don't have very much experience with graphics programming
+I'm easily distracted and it turns out that polygonal mesh processing is an
+interesting topic! I don't have very much experience with graphics programming
 or meshes as either a programmer or an artist. My hope is that coming to this
-fresh may introduce some novel perspectives (even if atypical).
+fresh may introduce some interesting and useful perspectives.
 
 Below are a few high level goals of the Plexus project:
 
@@ -50,12 +50,19 @@ Below are a few high level goals of the Plexus project:
   attempts to provide an API that does not allow user code to invalidate graphs;
   errors, panics, and bugs are contained within the library.
 
+- **Ergonomics**
+
+  APIs for non-trivial data structures can sometimes be unwieldy. Plexus
+  attempts to avoid this (with varying levels of success). In particular, the
+  APIs for graphs are unique and provide _views_ into its structure that I hope
+  are easier to understand and reason about than most other graph APIs.
+
 - **Documentation**
 
-  This may seems like an odd goal, but I sometimes find useful crates and
-  libraries difficult to use solely due to a lack of documentation and examples.
-  Plexus is very incomplete, but I've tried to document what I can via `rustdoc`
-  and a (very scrappy) [website](https://plexus.rs) and [user
+  I sometimes find useful crates and libraries difficult to use solely due to a
+  lack of documentation and examples.  Plexus is very incomplete, but I've tried
+  to document what I can via `rustdoc` and a (very scrappy)
+  [website](https://plexus.rs) and [user
   guide](https://plexus.rs/user-guide/graphs).
 
 In the future, I think it would be interesting to use Plexus as the basis for
@@ -142,7 +149,7 @@ graph data structures as well as raw buffers as seen above. It is also possible
 to generate iterators over individual vertices alongside indexing polygons
 (which avoids the use of an indexer).
 
-### A Note on Indexing, Hashing, and Floating-Point
+### Tangent: Indexing, Hashing, and Floating-Point
 
 As seen above, aggregating an iterator expression often requires _indexing_,
 which eliminates redundant geometry while maintaining topological structure. You
@@ -155,7 +162,7 @@ programming and that relies heavily on [IEEE-754
 floating-point](https://en.wikipedia.org/wiki/IEEE_754) values like `f32` that
 do **not** implement the `Hash` and `Eq` traits (for good reasons).
 
-To get around this, Plexus uses the
+To get around this, Plexus supports the
 [Decorum](https://github.com/olson-sean-k/decorum) crate, which I also spun off
 from Bismuth. Decorum provides proxy (wrapper) types for floating-point
 primitives that provide a total ordering and therefore can implement `Hash` and
@@ -173,4 +180,82 @@ interesting excercise, as common approaches using pointers or references do not
 provide clear ownship semantics and do not satisfy the borrow checker,
 especially in a mutable context.
 
+Here's a short example:
+
+```rust
+use cgmath::Point3;
+use plexus::encoding::ply::{FromPly, PositionEncoding};
+use plexus::graph::MeshGraph;
+use plexus::prelude::*;
+use std::fs::File;
+
+let ply = File::open("cube.ply").unwrap();
+let encoding = PositionEncoding::<Point3<f64>>::default();
+let (mut graph, _) = MeshGraph::<Point3<f64>>::from_ply(encoding, ply).unwrap();
+
+let keys = graph.faces().keys().collect::<Vec<_>>();
+for key in keys {
+    graph.face_mut(key).unwrap().poke_with_offset(1.0);
+}
+```
+
+This code loads mesh data from a file into a graph using the
+[PLY](https://en.wikipedia.org/wiki/ply_(file_format)) encoding. It then
+[pokes](https://docs.blender.org/manual/en/latest/modeling/meshes/editing/faces.html#poke-faces)
+every face, inserting a vertex and forming a triangles to each edge.
+`poke_with_offset` is able to compute the centroid of each face and then
+translate the position of the inserted vertex along the faces normal, because
+`Point3` implements the necessary geometric traits.
+
+Poking a face with an offset involves several geometric operations. To provide
+this functionality, Plexus integrates with
+[Theon](https://github.com/olson-sean-k/theon), which abstracts Euclidean
+spaces. Today, this provides immediate support for the
+[`cgmath`](https://crates.io/crates/cgmath),
+[`mint`](https://crates.io/crates/mint), and
+[`nalgebra`](https://crates.io/crates/nalgebra) crates. Non-Euclidean or
+otherwise unsupported types can be used, but the computation of geometry must be
+provided when necessary.
+
+I think one of the most interesting things about `MeshGraph`'s API is its use of
+_views_. Views behave a lot like references in Rust and expose a rich API on top
+of the underlying storage abstractions used to represent graphs. Combined with
+traits, it is even possible to write very generic code that operates exclusively
+with views:
+
+```rust
+use decorum::N64;
+use plexus::graph::{EdgeMidpoint, FaceView, GraphGeometry, MeshGraph};
+use plexus::prelude::*;
+use plexus::AsPosition;
+use smallvec::SmallVec;
+
+pub fn circumscribe<G>(face: FaceView<&mut MeshGraph<G>, G>) -> FaceView<&mut MeshGraph<G>, G>
+where
+    G: EdgeMidpoint + GraphGeometry,
+    G::Vertex: AsPosition,
+{
+    // Split each edge, stashing the vertex key and moving to the next arc.
+    let arity = face.arity();
+    let mut arc = face.into_arc();
+    let mut splits = SmallVec::<[_; 4]>::with_capacity(arity);
+    for _ in 0..arity {
+        let vertex = arc.split_at_midpoint();
+        splits.push(vertex.key());
+        arc = vertex.into_outgoing_arc().into_next_arc();
+    }
+    // Split faces along the vertices from each arc split.
+    let mut face = arc.into_face().unwrap();
+    for (a, b) in splits.into_iter().perimeter() {
+        face = face.split(ByKey(a), ByKey(b)).unwrap().into_face().unwrap();
+    }
+    // Return the central face of the subdivision.
+    face
+}
+```
+
+This example subdivides a face by circumscribing a similar polygon within its
+perimeter. Because this requires geometric operations, the `EdgeMidpoint` trait
+is used as a bound, specifying that the graph's geometry must support the
+computation of midpoints.
 ...
