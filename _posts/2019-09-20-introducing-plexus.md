@@ -7,7 +7,6 @@ tag:
   - mesh
   - plexus
   - rust
-feature: assets/img/features/introducing-plexus.jpg
 comments: false
 published: true
 ---
