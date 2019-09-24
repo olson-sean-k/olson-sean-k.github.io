@@ -207,6 +207,7 @@ header .entry-meta {
         background-color: rgba($color-palette-black, 0.6);
         background-blend-mode: multiply;
         background-position: center center;
+        background-size: cover;
     }
     @media #{$media-not-small} {
         color: white;
@@ -218,5 +219,6 @@ header .entry-meta {
         background-color: rgba($color-palette-black, 0.6);
         background-blend-mode: multiply;
         background-position: center center;
+        background-size: cover;
     }
 }
