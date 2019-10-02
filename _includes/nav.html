@@ -6,11 +6,10 @@
                 <a href="#">About</a>
                 <ul class="dl-submenu">
                     <li>
-                        <h4>{{ site.title }}</h4>
-                        <p>{{ site.description }}</p>
-                    </li>
-                    <li>
-                        <a href="{{ site.url }}/about/">Learn More</a>
+                        <a href="{{ site.url }}/about/">
+                            <h4>{{ site.title }}</h4>
+                            <p>{{ site.description }}</p>
+                        </a>
                     </li>
                     {% if site.email %}<li>
                         <a href="mailto:{{ site.email }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-fw fa-envelope-square"></i> Email</a>
@@ -83,7 +82,6 @@
                     </li>{% endif %}
                 </ul><!-- /.dl-submenu -->
             </li>
-            <li><a href="{{ site.url }}/projects">Projects</a></li>
             <li><a href="{{ site.url }}/posts">Posts</a></li>
             <li><a href="{{ site.url }}/tags">Tags</a></li>
             {% for link in site.data.navigation %}
