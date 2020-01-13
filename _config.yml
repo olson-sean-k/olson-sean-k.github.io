@@ -8,7 +8,6 @@ theme: minima
 # Jekyll.
 permalink: /:title/
 markdown: kramdown
-highlighter: rouge
 kramdown:
     auto_ids: true
     footnote_nr: 1
@@ -18,6 +17,7 @@ kramdown:
 
 # Theme.
 minima:
+    skin: sunrise
     social_links:
         github: olson-sean-k
         keybase: olsonseank
