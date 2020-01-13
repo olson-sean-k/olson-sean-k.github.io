@@ -8,7 +8,7 @@ tag:
   - plexus
   - rust
 comments: false
-published: false
+published: true
 ---
 
 I've been following Rust for a long time and in 2015 I decided to dive in and
