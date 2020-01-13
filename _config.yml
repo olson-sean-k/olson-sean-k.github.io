@@ -22,3 +22,6 @@ minima:
         github: olson-sean-k
         keybase: olsonseank
         twitter: olsonseank
+header_pages:
+    - index.md
+    - about.md
