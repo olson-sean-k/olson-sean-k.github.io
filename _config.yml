@@ -16,12 +16,16 @@ kramdown:
     enable_coderay: false
 
 # Theme.
-minima:
-    skin: solarized
-    social_links:
-        github: olson-sean-k
-        keybase: olsonseank
-        twitter: olsonseank
+github_username: olson-sean-k
+twitter_username: olsonseank
 header_pages:
     - index.md
     - about.md
+show_excerpts: true
+# TODO: Upgrade to Minima 3.x.
+#minima:
+#    skin: solarized
+#    social_links:
+#        github: olson-sean-k
+#        keybase: olsonseank
+#        twitter: olsonseank
